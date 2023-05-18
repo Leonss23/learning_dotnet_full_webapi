@@ -8,23 +8,30 @@ namespace learning_dotnet_full_webapi.Services.UserService
 {
     public class UserManagementService : IUserManagementService
     {
-        public async Task<List<User>> AddUser(User newUser)
+        public async Task<ServiceResponse<List<User>>> AddUser(User newUser)
         {
             User.List.Add(newUser);
-            return User.List;
+
+            var serviceResponse = new ServiceResponse<List<User>> { Data = User.List };
+            return serviceResponse;
         }
 
-        public async Task<List<User>> GetAll()
+        public async Task<ServiceResponse<List<User>>> GetAll()
         {
-            return User.List;
+            var serviceResponse = new ServiceResponse<List<User>>();
+            serviceResponse.Data = User.List;
+            return serviceResponse;
         }
 
-        public async Task<User> GetUserById(int id)
+        public async Task<ServiceResponse<User>> GetUserById(int id)
         {
             var user = User.List.FirstOrDefault(user => user.Id == id);
             if (user == null)
                 throw new Exception("User not found");
-            return user;
+
+            var serviceResponse = new ServiceResponse<User>();
+            serviceResponse.Data = user;
+            return serviceResponse;
         }
     }
 }
