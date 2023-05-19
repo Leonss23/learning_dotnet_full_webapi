@@ -1,14 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace learning_dotnet_full_webapi.Models
+namespace learning_dotnet_full_webapi.DTOs.User
 {
-    public class User
+    public class UpdateUserRequestDTO
     {
-        static public List<User> List = new List<User>();
         public int Id { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
