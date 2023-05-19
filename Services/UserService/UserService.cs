@@ -33,6 +33,17 @@ namespace learning_dotnet_full_webapi.Services.UserService
             return serviceResponse;
         }
 
+        public async Task<ServiceResponse<List<GetUserResponseDTO>>> DeleteUserById(int id)
+        {
+            User.List.RemoveAll(user => user.Id == id);
+
+            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>
+            {
+                Data = _mapper.Map<List<GetUserResponseDTO>>(User.List)
+            };
+            return serviceResponse;
+        }
+
         public async Task<ServiceResponse<List<GetUserResponseDTO>>> GetAll()
         {
             var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>

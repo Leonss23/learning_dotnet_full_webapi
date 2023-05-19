@@ -13,5 +13,6 @@ namespace learning_dotnet_full_webapi.Services.UserService
         Task<ServiceResponse<GetUserResponseDTO>> GetUserById(int id);
         Task<ServiceResponse<List<GetUserResponseDTO>>> AddUser(AddUserRequestDTO newUser);
         Task<ServiceResponse<GetUserResponseDTO>> UpdateUser(UpdateUserRequestDTO updatedUser);
+        Task<ServiceResponse<List<GetUserResponseDTO>>> DeleteUserById(int id);
     }
 }
