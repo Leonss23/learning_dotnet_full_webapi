@@ -8,8 +8,7 @@ namespace learning_dotnet_full_webapi.Models
     public class ServiceResponse<T>
     {
         public T? Data { get; set; }
-        public bool Success { get; set; } = true;
-        public string Message { get; set; } = string.Empty;
-        
+        public bool Success { get; set; } = false;
+        public string Message { get; set; } = "Unexpected Error";
     }
 }

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
+using learning_dotnet_full_webapi.Data;
 using learning_dotnet_full_webapi.DTOs.User;
 using learning_dotnet_full_webapi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace learning_dotnet_full_webapi.Services.UserService
 {
@@ -12,8 +14,11 @@ namespace learning_dotnet_full_webapi.Services.UserService
     {
         private readonly IMapper _mapper;
 
-        public UserService(IMapper mapper)
+        private readonly DataContext _context;
+
+        public UserService(IMapper mapper, DataContext context)
         {
+            _context = context;
             _mapper = mapper;
         }
 
@@ -21,60 +26,101 @@ namespace learning_dotnet_full_webapi.Services.UserService
             AddUserRequestDTO newUser
         )
         {
+            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>();
             var mappedUser = _mapper.Map<User>(newUser);
-            if (User.List.Count > 0)
-                mappedUser.Id = (User.List.Max(user => user.Id) + 1);
-            User.List.Add(mappedUser);
 
-            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>
-            {
-                Data = _mapper.Map<List<GetUserResponseDTO>>(User.List)
-            };
+            _context.Users.Add(mappedUser);
+            await _context.SaveChangesAsync();
+
+            serviceResponse.Data = _mapper.Map<List<GetUserResponseDTO>>(_context.Users);
+            serviceResponse.Success = true;
+            serviceResponse.Message = "User added successfully";
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<GetUserResponseDTO>>> DeleteUserById(int id)
         {
-            User.List.RemoveAll(user => user.Id == id);
+            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>();
 
-            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>
+            var userToDelete = await _context.Users.FindAsync(id);
+
+            if (userToDelete == null)
             {
-                Data = _mapper.Map<List<GetUserResponseDTO>>(User.List)
-            };
+                serviceResponse.Success = false;
+                serviceResponse.Message = "User not found";
+                return serviceResponse;
+            }
+
+            _context.Users.Remove(userToDelete);
+            await _context.SaveChangesAsync();
+
+            serviceResponse.Data = _mapper.Map<List<GetUserResponseDTO>>(
+                await _context.Users.ToListAsync()
+            );
+            serviceResponse.Success = true;
+            serviceResponse.Message = "User deleted successfully";
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<List<GetUserResponseDTO>>> GetAll()
         {
-            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>
+            var serviceResponse = new ServiceResponse<List<GetUserResponseDTO>>();
+
+            var users = await _context.Users.ToListAsync();
+
+            if (users == null)
             {
-                Data = _mapper.Map<List<GetUserResponseDTO>>(User.List)
-            };
+                serviceResponse.Success = false;
+                serviceResponse.Message = "Failed to fetch users list.";
+                return serviceResponse;
+            }
+
+            serviceResponse.Data = _mapper.Map<List<GetUserResponseDTO>>(users);
+            serviceResponse.Success = true;
+            serviceResponse.Message = "Fetched users list successfully.";
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetUserResponseDTO>> GetUserById(int id)
         {
-            var user = User.List.FirstOrDefault(user => user.Id == id);
-            var serviceResponse = new ServiceResponse<GetUserResponseDTO>
+            var serviceResponse = new ServiceResponse<GetUserResponseDTO>();
+
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
             {
-                Data = _mapper.Map<GetUserResponseDTO>(user)
-            };
+                serviceResponse.Message = "User not found";
+                return serviceResponse;
+            }
+
+            serviceResponse.Data = _mapper.Map<GetUserResponseDTO>(user);
+            serviceResponse.Success = true;
+            serviceResponse.Message = "Fetched user successfully.";
             return serviceResponse;
         }
 
         public async Task<ServiceResponse<GetUserResponseDTO>> UpdateUser(
-            UpdateUserRequestDTO updatedUser
+            UpdateUserRequestDTO updateRequest
         )
         {
-            var user = User.List.FirstOrDefault(user => user.Id == updatedUser.Id);
-            user.Username = updatedUser.Username;
-            user.Password = updatedUser.Password;
+            var serviceResponse = new ServiceResponse<GetUserResponseDTO>();
 
-            var serviceResponse = new ServiceResponse<GetUserResponseDTO>
+            var userUpdate = await _context.Users.FindAsync(updateRequest.Id);
+
+            if (userUpdate == null)
             {
-                Data = _mapper.Map<GetUserResponseDTO>(user)
-            };
+                serviceResponse.Message = "User not found";
+                return serviceResponse;
+            }
+
+            userUpdate.Username = updateRequest.Username;
+            userUpdate.Password = updateRequest.Password;
+
+            await _context.SaveChangesAsync();
+
+            serviceResponse.Data = _mapper.Map<GetUserResponseDTO>(userUpdate);
+            serviceResponse.Success = true;
+            serviceResponse.Message = "User updated successfully";
             return serviceResponse;
         }
     }
