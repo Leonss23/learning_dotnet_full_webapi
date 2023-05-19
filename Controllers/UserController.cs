@@ -47,5 +47,11 @@ namespace learning_dotnet_full_webapi.Controllers
         {
             return Ok(await _userService.UpdateUser(updatedUser));
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ServiceResponse<GetUserResponseDTO>>> DeleteUser(int id)
+        {
+            return Ok(await _userService.DeleteUserById(id));
+        }
     }
 }
